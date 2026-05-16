@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: always
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  worker:
+    build: .
+    command: celery -A tasks worker --loglevel=info --concurrency=4
+    restart: always
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - sqlite_data:/app/data
+      - ./scraper.log:/app/scraper.log
+
+  scraper:
+    build: .
+    command: python main.py
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - sqlite_data:/app/data
+      - ./scraper.log:/app/scraper.log
+    profiles:
+      - run
+
+volumes:
+  redis_data:
+  sqlite_data:
