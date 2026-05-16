@@ -6,7 +6,7 @@ daily report to telegram
 import logging
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 from celery import group
 from dotenv import load_dotenv
@@ -40,7 +40,7 @@ def get_cities_for_today() -> list[str]:
     """
     rotate throught cities daily so every city get searched over time.
     """
-    day_of_year = datetime.now(datetime.timezone.utc).timetuple().tm_yday
+    day_of_year = datetime.now(timezone.utc).timetuple().tm_yday
     start_index = (day_of_year * CITIES_PER_RUN) % len(CITIES)
     end_index = start_index + CITIES_PER_RUN
 
