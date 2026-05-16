@@ -23,7 +23,6 @@ services:
       - REDIS_URL=redis://redis:6379/0
     volumes:
       - sqlite_data:/app/data
-      - ./scraper.log:/app/scraper.log
 
   scraper:
     build: .
@@ -37,7 +36,6 @@ services:
       - REDIS_URL=redis://redis:6379/0
     volumes:
       - sqlite_data:/app/data
-      - ./scraper.log:/app/scraper.log
     profiles:
       - run
 
