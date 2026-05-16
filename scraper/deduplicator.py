@@ -33,7 +33,7 @@ def get_connection():
 
 class Deduplicator:
     def __init__(self):
-        self.init_db()
+        self._init_db()
 
     def _init_db(self):
         """create tables if they do not exist"""
