@@ -22,8 +22,8 @@ RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi --no-root
 
 # install Playwright browsers
-RUN playwright install chromium
-RUN playwright install-deps chromium
+RUN poetry run playwright install chromium
+RUN poetry run playwright install-deps chromium
 
 # copy application code
 COPY . .
