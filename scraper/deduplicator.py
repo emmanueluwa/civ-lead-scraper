@@ -3,12 +3,11 @@ sqlite based deduplication layer
 prevents duplicate leads reaching hubspot
 """
 
-from bisect import insort
 import logging
 import os
 import sqlite3
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +87,7 @@ class Deduplicator:
 
     def mark_seen(self, place_id: str, name: str, phone: str, website: str):
         """record a place and phone number as seen"""
-        now = datetime.now(datetime.timezone.utc).isoformat()
+        now = datetime.now(timezone.utc).isoformat()
 
         with get_connection() as conn:
             # insert found place
