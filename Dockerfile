@@ -28,7 +28,7 @@ RUN poetry run playwright install-deps chromium
 # copy application code
 COPY . .
 
-# create data directory for SQLite
-RUN mkdir -p /app/data
+# remove scraper.log if it exists as a directory and create data dir
+RUN rm -rf /app/scraper.log && mkdir -p /app/data
 
 CMD ["python", "main.py"]
