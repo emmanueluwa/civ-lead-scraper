@@ -45,9 +45,9 @@ celery_app.conf.update(
 )
 def search_and_push(self, query: str, city: str) -> dict:
     """
-    Search Google Places for a query in a city.
-    Deduplicates results and pushes new leads to HubSpot.
-    Returns a summary of the run.
+    search Google Places for a query in a city.
+    deduplicates results and pushes new leads to HubSpot.
+    returns a summary of the run.
     """
     results = {
         "query": query,
