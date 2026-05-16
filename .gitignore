@@ -1,0 +1,6 @@
+.env
+data/
+scraper.log
+__pycache__/
+*.pyc
+.venv/
