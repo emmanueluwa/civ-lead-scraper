@@ -78,8 +78,8 @@ class Deduplicator:
 
             # check phone number
             if phone:
-                row = conn.ececute(
-                    "SELECT id FROM seen_phones WHERE phone = ?", (phone)
+                row = conn.execute(
+                    "SELECT id FROM seen_phones WHERE phone = ?", (phone,)
                 ).fetchone()
                 if row:
                     return True
