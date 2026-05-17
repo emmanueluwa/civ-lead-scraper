@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 # number of cities to search per run
 # 20 cities × 10 queries × 20 results = up to 4,000 raw results
 # estimation 300-500 clean leads
-CITIES_PER_RUN = 20
+CITIES_PER_RUN = 3
 
 
 def get_cities_for_today() -> list[str]:
