@@ -119,6 +119,9 @@ def search_and_push(self, query: str, city: str) -> dict:
                         results["pushed"] += 1
                     else:
                         results["errors"] += 1
+                        results["error_details"].append(
+                            f"{place.name}: HubSpot push returned False"
+                        )
 
                 except Exception as e:
                     error_msg = f"{place.name}: {str(e)}"

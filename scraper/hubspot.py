@@ -74,7 +74,9 @@ class HubSpotClient:
             return True
 
         except Exception as e:
-            logger.error(f"failed to push lead {lead.company_name}: {e}")
+            logger.error(
+                f"Failed to push lead {lead.company_name}: {type(e).__name__}: {e}"
+            )
 
             return False
 
