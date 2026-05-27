@@ -5,3 +5,5 @@ __pycache__/
 *.pyc
 .venv/
 todo
+gmail_credentials.json
+setup_gmail.py
