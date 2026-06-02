@@ -157,7 +157,6 @@ class FollowUpAgent:
         body = self._build_follow_up_body(
             company_name=lead["company_name"],
             recipient_name=lead["recipient_name"],
-            original_body=lead["email_body"],
             youtube_url=lead["youtube_url"],
             follow_up_number=follow_up_number,
         )
@@ -183,7 +182,6 @@ class FollowUpAgent:
         self,
         company_name: str,
         recipient_name: Optional[str],
-        original_body: str,
         youtube_url: Optional[str],
         follow_up_number: int,
     ) -> str:
