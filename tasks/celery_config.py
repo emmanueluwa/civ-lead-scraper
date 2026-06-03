@@ -62,5 +62,10 @@ celery_app.conf.update(
             "task": "tasks.notification_tasks.run_video_notification",
             "schedule": 86400,
         },
+        # daily pipeline performance report — every day at 8pm UTC
+        "daily-report": {
+            "task": "tasks.notification_tasks.run_daily_report",
+            "schedule": 86400,
+        },
     },
 )
