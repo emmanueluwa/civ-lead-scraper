@@ -10,9 +10,10 @@ services:
       timeout: 5s
       retries: 3
 
-  worker:
+  # scraper worker — handles Google Places searches in parallel
+  scraper-worker:
     build: .
-    command: celery -A tasks worker --loglevel=info --concurrency=4
+    command: celery -A tasks worker --loglevel=info --concurrency=4 --queues=scraper
     restart: always
     depends_on:
       redis:
@@ -24,6 +25,38 @@ services:
     volumes:
       - sqlite_data:/app/data
 
+  # agent worker — handles research, email sending, monitoring, follow ups
+  agent-worker:
+    build: .
+    command: celery -A tasks worker --loglevel=info --concurrency=2 --queues=agent
+    restart: always
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - sqlite_data:/app/data
+
+  # beat scheduler — triggers all scheduled tasks
+  beat:
+    build: .
+    command: celery -A tasks beat --loglevel=info --scheduler celery.beat.PersistentScheduler
+    restart: always
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - sqlite_data:/app/data
+      - beat_data:/app/beat
+
+  # scraper — run manually or via cron to find new leads
   scraper:
     build: .
     command: python main.py
@@ -42,3 +75,4 @@ services:
 volumes:
   redis_data:
   sqlite_data:
+  beat_data:

@@ -31,6 +31,11 @@ celery_app.conf.update(
     task_track_started=True,
     timezone="UTC",
     enable_utc=True,
+    task_routes={
+        "tasks.scraper_tasks.*": {"queue": "scraper"},
+        "tasks.agent_tasks.*": {"queue": "agent"},
+        "tasks.notification_tasks.*": {"queue": "agent"},
+    },
     beat_schedule={
         # research and classify new leads — every 2 hours
         "research-and-personalise": {
