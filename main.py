@@ -14,7 +14,8 @@ from dotenv import load_dotenv
 from cities import CITIES, SEARCH_QUERIES
 from scraper.deduplicator import Deduplicator
 from scraper.notifier import Notifier
-from tasks import search_and_push
+from tasks.scraper_tasks import search_and_push
+from models import init_db
 
 load_dotenv()
 
@@ -57,6 +58,9 @@ def run():
     sends report to telegram after completion
     """
     start_time = time.time()
+
+    init_db()
+
     notifier = Notifier()
     deduplicator = Deduplicator()
 
