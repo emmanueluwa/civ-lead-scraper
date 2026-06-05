@@ -2,12 +2,12 @@ FROM python:3.12-slim AS base
 
 WORKDIR /app
 
-RUN curl -sSL https://install.python-poetry.org | python3 -
+RUN curl -sSL https://install.python-poetry.org | python3 - \
+    && /root/.local/bin/poetry config virtualenvs.create false
 
 COPY pyproject.toml poetry.lock* ./
 
-RUN /root/.local/bin/poetry config virtualenvs.create false \
-    && /root/.local/bin/poetry install --no-interaction --no-ansi --no-root --only main
+RUN /root/.local/bin/poetry install --no-interaction --no-ansi --no-root --only main
 
 COPY . .
 
