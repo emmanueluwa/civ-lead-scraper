@@ -15,6 +15,10 @@ from dashboard.routes import leads, videos, outreach, calls
 
 logger = logging.getLogger(__name__)
 
+ALLOWED_ORIGINS = os.environ.get(
+    "ALLOWED_ORIGINS", "https://dashboard.fulodev.com,http://localhost:3000"
+).split(",")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -33,15 +37,12 @@ app = FastAPI(
     description="Monitor and manage the automated sales pipeline",
     version="1.0.0",
     lifespan=lifespan,
+    redirect_slashes=False,
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://dashboard.fulodev.com",
-        "https://sales-agent-dashboard-6xg.pages.dev",
-        "http://localhost:3000",
-    ],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
