@@ -3,6 +3,7 @@ FROM python:3.12-slim AS base
 WORKDIR /app
 
 RUN curl -sSL https://install.python-poetry.org | python3 -
+
 ENV PATH="/root/.local/bin:$PATH"
 
 COPY pyproject.toml poetry.lock* ./
@@ -24,8 +25,8 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     && rm -rf /var/lib/apt/lists/*
 
-RUN poetry run playwright install chromium
-RUN poetry run playwright install-deps chromium
+RUN playwright install chromium
+RUN playwright install-deps chromium
 
 
 FROM playwright-base AS scraper
