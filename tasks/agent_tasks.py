@@ -7,7 +7,7 @@ each task is independent and will retry if failed.
 import logging
 
 from tasks.celery_config import celery_app
-from models import get_connection, DocumentType
+from models import get_connection, DocumentType, init_db
 from agent.researcher import ResearchAgent
 from agent.personaliser import PersonalisationAgent
 from agent.executor import EmailExecutor
@@ -122,26 +122,30 @@ def run_research_pipeline() -> dict:
     try:
         import sqlite3
         from scraper.deduplicator import Deduplicator, DB_PATH as LEADS_DB_PATH
+        from models import DB_PATH as AGENT_DB_PATH
 
         # ensure leads.db exists
         Deduplicator()
+        init_db()
 
         # query leads.db directly — seen_places lives here not in sales_agent.db
         conn = sqlite3.connect(LEADS_DB_PATH)
         conn.row_factory = sqlite3.Row
+        conn.execute(f"ATTACH DATABASE '{AGENT_DB_PATH}' AS agent_db")
 
         rows = conn.execute(
             """
             SELECT sp.place_id, sp.name, sp.website,
                     sp.phone
             FROM seen_places sp
-            LEFT JOIN company_research cr
+            LEFT JOIN agent_db.company_research cr
                 ON sp.place_id = cr.place_id
             WHERE cr.place_id IS NULL
             AND sp.pushed_to_hubspot = 1
             LIMIT 100
             """,
         ).fetchall()
+        conn.close()
 
         leads = [dict(row) for row in rows]
         logger.info(f"Research pipeline — {len(leads)} leads to research")
