@@ -120,23 +120,28 @@ def run_research_pipeline() -> dict:
     runs every 2 hours via celery beat
     """
     try:
-        from scraper.deduplicator import Deduplicator
+        import sqlite3
+        from scraper.deduplicator import Deduplicator, DB_PATH as LEADS_DB_PATH
 
+        # ensure leads.db exists
         Deduplicator()
 
-        with get_connection() as conn:
-            rows = conn.execute(
-                """
-                SELECT sp.place_id, sp.name, sp.website,
-                       sp.phone
-                FROM seen_places sp
-                LEFT JOIN company_research cr
-                    ON sp.place_id = cr.place_id
-                WHERE cr.place_id IS NULL
-                AND sp.pushed_to_hubspot = 1
-                LIMIT 100
-                """,
-            ).fetchall()
+        # query leads.db directly — seen_places lives here not in sales_agent.db
+        conn = sqlite3.connect(LEADS_DB_PATH)
+        conn.row_factory = sqlite3.Row
+
+        rows = conn.execute(
+            """
+            SELECT sp.place_id, sp.name, sp.website,
+                    sp.phone
+            FROM seen_places sp
+            LEFT JOIN company_research cr
+                ON sp.place_id = cr.place_id
+            WHERE cr.place_id IS NULL
+            AND sp.pushed_to_hubspot = 1
+            LIMIT 100
+            """,
+        ).fetchall()
 
         leads = [dict(row) for row in rows]
         logger.info(f"Research pipeline — {len(leads)} leads to research")
