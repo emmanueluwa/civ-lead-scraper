@@ -10,9 +10,11 @@ services:
       timeout: 5s
       retries: 3
 
-  # scraper worker — handles Google Places searches in parallel
+  # scraper worker — parallel Google Places searches
   scraper-worker:
-    build: .
+    build:
+      context: .
+      target: worker
     command: celery -A tasks worker --loglevel=info --concurrency=4 --queues=scraper
     restart: always
     depends_on:
@@ -25,9 +27,11 @@ services:
     volumes:
       - sqlite_data:/app/data
 
-  # agent worker — handles research, email sending, monitoring, follow ups
+  # agent worker — research, email, monitor, follow ups, booking
   agent-worker:
-    build: .
+    build:
+      context: .
+      target: worker
     command: celery -A tasks worker --loglevel=info --concurrency=2 --queues=agent
     restart: always
     depends_on:
@@ -42,8 +46,9 @@ services:
 
   # beat scheduler — triggers all scheduled tasks
   beat:
-    build: .
-    command: celery -A tasks beat --loglevel=info --scheduler celery.beat.PersistentScheduler
+    build:
+      context: .
+      target: beat
     restart: always
     depends_on:
       redis:
@@ -56,10 +61,29 @@ services:
       - sqlite_data:/app/data
       - beat_data:/app/beat
 
-  # scraper — run manually or via cron to find new leads
+  # dashboard — FastAPI backend for the sales agent UI
+  dashboard:
+    build:
+      context: .
+      target: dashboard
+    restart: always
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    volumes:
+      - sqlite_data:/app/data
+
+  # scraper — run manually via docker compose run --rm scraper
   scraper:
-    build: .
-    command: python main.py
+    build:
+      context: .
+      target: scraper
     depends_on:
       redis:
         condition: service_healthy
