@@ -2,6 +2,9 @@ FROM python:3.12-slim AS base
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y curl \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN curl -sSL https://install.python-poetry.org | python3 - \
     && /root/.local/bin/poetry config virtualenvs.create false
 
@@ -18,7 +21,6 @@ FROM base AS playwright-base
 
 RUN apt-get update && apt-get install -y \
     gcc \
-    curl \
     wget \
     gnupg \
     && rm -rf /var/lib/apt/lists/*
