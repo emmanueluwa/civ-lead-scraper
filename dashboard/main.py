@@ -37,7 +37,6 @@ app = FastAPI(
     description="Monitor and manage the automated sales pipeline",
     version="1.0.0",
     lifespan=lifespan,
-    redirect_slashes=False,
 )
 
 app.add_middleware(
