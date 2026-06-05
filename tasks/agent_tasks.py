@@ -119,6 +119,9 @@ def run_research_pipeline() -> dict:
     dispatches individual research tasks for each
     runs every 2 hours via celery beat
     """
+    from scraper.deduplicator import Deduplicator
+
+    Deduplicator()
     try:
         with get_connection() as conn:
             rows = conn.execute(
