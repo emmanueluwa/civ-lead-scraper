@@ -10,7 +10,6 @@ services:
       timeout: 5s
       retries: 3
 
-  # scraper worker — parallel Google Places searches
   scraper-worker:
     build:
       context: .
@@ -27,7 +26,6 @@ services:
     volumes:
       - sqlite_data:/app/data
 
-  # agent worker — research, email, monitor, follow ups, booking
   agent-worker:
     build:
       context: .
@@ -44,7 +42,6 @@ services:
     volumes:
       - sqlite_data:/app/data
 
-  # beat scheduler — triggers all scheduled tasks
   beat:
     build:
       context: .
@@ -61,7 +58,6 @@ services:
       - sqlite_data:/app/data
       - beat_data:/app/beat
 
-  # dashboard — FastAPI backend for the sales agent UI
   dashboard:
     build:
       context: .
@@ -79,7 +75,6 @@ services:
     volumes:
       - sqlite_data:/app/data
 
-  # scraper — run manually via docker compose run --rm scraper
   scraper:
     build:
       context: .
