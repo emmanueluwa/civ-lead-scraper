@@ -12,12 +12,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from models import init_db
 from dashboard.routes import leads, videos, outreach, calls
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 logger = logging.getLogger(__name__)
 
-ALLOWED_ORIGINS = os.environ.get(
-    "ALLOWED_ORIGINS", "https://dashboard.fulodev.com,http://localhost:3000"
-).split(",")
+ALLOWED_ORIGINS = os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000")
+
+PROXY_TRUSTED_HOSTS = os.environ.get("PROXY_TRUSTED_HOSTS")
 
 
 @asynccontextmanager
@@ -39,6 +40,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -46,6 +48,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=PROXY_TRUSTED_HOSTS)
 
 
 # mount routes
