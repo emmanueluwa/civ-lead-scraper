@@ -44,6 +44,8 @@ class Deduplicator:
                     name TEXT NOT NULL,
                     phone TEXT,
                     website TEXT,
+                    city TEXT,
+                    state TEXT,
                     first_seen_at TEXT NOT NULL,
                     pushed_to_hubspot INTEGER DEFAULT 0
                 );
@@ -85,7 +87,15 @@ class Deduplicator:
 
         return False
 
-    def mark_seen(self, place_id: str, name: str, phone: str, website: str):
+    def mark_seen(
+        self,
+        place_id: str,
+        name: str,
+        phone: str,
+        website: str,
+        city: str = "",
+        state: str = "",
+    ):
         """record a place and phone number as seen"""
         now = datetime.now(timezone.utc).isoformat()
 
@@ -94,10 +104,10 @@ class Deduplicator:
             conn.execute(
                 """
                     INSERT OR IGNORE INTO seen_places
-                        (place_id, name, phone, website, first_seen_at)
-                    VALUES (?, ?, ?, ?, ?)
+                        (place_id, name, phone, website, city, state, first_seen_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                     """,
-                (place_id, name, phone, website, now),
+                (place_id, name, phone, website, city, state, now),
             )
 
             # insert found phone number
