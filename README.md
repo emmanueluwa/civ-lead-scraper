@@ -52,8 +52,6 @@ The only manual steps are recording demo videos when the agent asks and showing 
 
 ## Dashboard
 
-The sales agent dashboard at `dashboard.fulodev.com` gives visibility into:
-
 - Lead groups by state and document type
 - Video library — paste YouTube demo URLs per group
 - Outreach pipeline — email status, replies, follow ups
