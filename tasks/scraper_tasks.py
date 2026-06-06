@@ -62,6 +62,8 @@ def search_and_push(self, query: str, city: str) -> dict:
                         name=place.name,
                         phone=phone,
                         website=place.website or "",
+                        city=city_name,
+                        state=state_name,
                     )
 
                     # enrich with website contact details
