@@ -73,7 +73,7 @@ class PersonalisationAgent:
                 f"No video available for {state} + {document_type.value} — "
                 f"skipping {company_name}"
             )
-            self._mark_video_needed(place_id, state, document_type)
+            self._mark_video_needed(place_id, company_name, state, document_type)
 
             return None
 
@@ -118,7 +118,7 @@ class PersonalisationAgent:
         return row["youtube_url"] if row else None
 
     def _mark_video_needed(
-        self, place_id: str, state: str, document_type: DocumentType
+        self, place_id: str, company_name: str, state: str, document_type: DocumentType
     ) -> None:
         """
         mark state and document type as needing a video
@@ -143,7 +143,7 @@ class PersonalisationAgent:
                     status = 'video_needed',
                     updated_at = excluded.updated_at
                 """,
-                (place_id, "", now_utc(), now_utc()),
+                (place_id, company_name, now_utc(), now_utc()),
             )
 
     def _build_prompt(
