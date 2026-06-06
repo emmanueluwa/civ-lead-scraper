@@ -136,7 +136,7 @@ def run_research_pipeline() -> dict:
         rows = conn.execute(
             """
             SELECT sp.place_id, sp.name, sp.website,
-                    sp.phone
+                    sp.phone, sp.city, sp.state
             FROM seen_places sp
             LEFT JOIN agent_db.company_research cr
                 ON sp.place_id = cr.place_id
@@ -156,8 +156,8 @@ def run_research_pipeline() -> dict:
                 company_name=lead["name"],
                 website=lead["website"] or "",
                 address="",
-                city="",
-                state="",
+                city=lead["city"] or "",
+                state=lead["state"] or "",
             )
 
         return {"dispatched": len(leads)}
