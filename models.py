@@ -92,7 +92,7 @@ def init_db():
             -- tracks outreach state per company
             CREATE TABLE IF NOT EXISTS outreach (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                place_id TEXT NOT NULL,
+                place_id TEXT UNIQUE NOT NULL,
                 company_name TEXT NOT NULL,
                 recipient_email TEXT,
                 recipient_name TEXT,
