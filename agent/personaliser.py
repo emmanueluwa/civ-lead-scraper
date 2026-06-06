@@ -130,7 +130,6 @@ class PersonalisationAgent:
                 INSERT OR IGNORE INTO video_library
                     (state, document_type, youtube_url, created_at, updated_at)
                 VALUES (?, ?, NULL, ?, ?)
-                (state, document_type.value, now_utc(), now_utc()), 
                 """,
                 (state, document_type.value, now_utc(), now_utc()),
             )
@@ -290,35 +289,56 @@ Example format:
         save email draft to outreach table.
         """
         with get_connection() as conn:
-            conn.execute(
-                """
-                INSERT INTO outreach (
-                    place_id, company_name, recipient_email,
-                    recipient_name, status, email_subject,
-                    email_body, youtube_url, created_at, updated_at
+            existing = conn.execute(
+                "SELECT id FROM outreach WHERE place_id = ?",
+                (place_id,),
+            ).fetchone()
+
+            if not existing:
+                conn.execute(
+                    """
+                    INSERT INTO outreach (
+                        place_id, company_name, recipient_email,
+                        recipient_name, status, email_subject,
+                        email_body, youtube_url, created_at, updated_at
+                    )
+                    VALUES (?, ?, ?, ?, 'queued', ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        place_id,
+                        company_name,
+                        draft.recipient_email,
+                        draft.recipient_name,
+                        draft.subject,
+                        draft.body,
+                        draft.youtube_url,
+                        now_utc(),
+                        now_utc(),
+                    ),
                 )
-                VALUES (?, ?, ?, ?, 'queued', ?, ?, ?, ?, ?)
-                ON CONFLICT(place_id) DO UPDATE SET
-                    recipient_email = excluded.recipient_email,
-                    recipient_name = excluded.recipient_name,
-                    email_subject = excluded.email_subject,
-                    email_body = excluded.email_body,
-                    youtube_url = excluded.youtube_url,
-                    status = 'queued',
-                    updated_at = excluded.updated_at
-                """,
-                (
-                    place_id,
-                    company_name,
-                    draft.recipient_email,
-                    draft.recipient_name,
-                    draft.subject,
-                    draft.body,
-                    draft.youtube_url,
-                    now_utc(),
-                    now_utc(),
-                ),
-            )
+            else:
+                conn.execute(
+                    """
+                    UPDATE outreach SET
+                        recipient_email = ?,
+                        recipient_name = ?,
+                        email_subject = ?,
+                        email_body = ?,
+                        youtube_url = ?,
+                        status = 'queued',
+                        updated_at = ?
+                    WHERE place_id = ?
+                    """,
+                    (
+                        draft.recipient_email,
+                        draft.recipient_name,
+                        draft.subject,
+                        draft.body,
+                        draft.youtube_url,
+                        now_utc(),
+                        place_id,
+                    ),
+                )
 
         logger.info(
             f"Email draft saved for {company_name} — "
