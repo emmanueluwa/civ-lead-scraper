@@ -43,4 +43,4 @@ CMD ["celery", "-A", "tasks", "beat", "--loglevel=info", "--scheduler", "celery.
 
 FROM base AS dashboard
 EXPOSE 8000
-CMD ["uvicorn", "dashboard.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "dashboard.main:app", "--host", "0.0.0.0", "--port", "8000", "--forwarded-allow-ips", "127.0.0.1"]

@@ -12,7 +12,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from models import init_db
 from dashboard.routes import leads, videos, outreach, calls
-from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 logger = logging.getLogger(__name__)
 
