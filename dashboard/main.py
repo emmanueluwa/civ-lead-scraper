@@ -18,8 +18,6 @@ logger = logging.getLogger(__name__)
 
 ALLOWED_ORIGINS = os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 
-PROXY_TRUSTED_HOSTS = os.environ.get("PROXY_TRUSTED_HOSTS")
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -48,8 +46,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=PROXY_TRUSTED_HOSTS)
 
 
 # mount routes
