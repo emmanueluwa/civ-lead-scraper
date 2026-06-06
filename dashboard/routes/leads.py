@@ -159,6 +159,7 @@ async def get_document_types():
     return {"document_types": [dict(row) for row in rows]}
 
 
+@router.get("/{place_id}")
 async def get_lead(place_id: str):
     """
     get full details for a single lead including outreach history
