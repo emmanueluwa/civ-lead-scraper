@@ -65,6 +65,12 @@ def search_and_push(self, query: str, city: str) -> dict:
                         address_parts[-2].strip() if len(address_parts) >= 2 else ""
                     )
 
+                    # state may be in format "TX 76060"
+                    state_raw = (
+                        address_parts[-2].strip() if len(address_parts) >= 2 else ""
+                    )
+                    state_name = state_raw.split()[0] if state_raw else ""
+
                     # mark as seen immediately to prevent race conditions
                     deduplicator.mark_seen(
                         place_id=place.place_id,
