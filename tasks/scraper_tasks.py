@@ -56,6 +56,15 @@ def search_and_push(self, query: str, city: str) -> dict:
                         results["duplicates"] += 1
                         continue
 
+                    # parse city and state from address
+                    address_parts = place.address.split(",")
+                    city_name = (
+                        address_parts[-3].strip() if len(address_parts) >= 3 else city
+                    )
+                    state_name = (
+                        address_parts[-2].strip() if len(address_parts) >= 2 else ""
+                    )
+
                     # mark as seen immediately to prevent race conditions
                     deduplicator.mark_seen(
                         place_id=place.place_id,
@@ -68,15 +77,6 @@ def search_and_push(self, query: str, city: str) -> dict:
 
                     # enrich with website contact details
                     contact = enricher.enrich(place.website)
-
-                    # parse city and state from address
-                    address_parts = place.address.split(",")
-                    city_name = (
-                        address_parts[-3].strip() if len(address_parts) >= 3 else city
-                    )
-                    state_name = (
-                        address_parts[-2].strip() if len(address_parts) >= 2 else ""
-                    )
 
                     lead = LeadRecord(
                         company_name=place.name,
