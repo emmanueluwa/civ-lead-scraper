@@ -61,9 +61,6 @@ def search_and_push(self, query: str, city: str) -> dict:
                     city_name = (
                         address_parts[-3].strip() if len(address_parts) >= 3 else city
                     )
-                    state_name = (
-                        address_parts[-2].strip() if len(address_parts) >= 2 else ""
-                    )
 
                     # state may be in format "TX 76060"
                     state_raw = (
