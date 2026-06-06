@@ -127,25 +127,37 @@ class PersonalisationAgent:
         with get_connection() as conn:
             conn.execute(
                 """
-                INSERT INTO video_library
+                INSERT OR IGNORE INTO video_library
                     (state, document_type, youtube_url, created_at, updated_at)
                 VALUES (?, ?, NULL, ?, ?)
-                ON CONFLICT(state, document_type) DO NOTHING
+                (state, document_type.value, now_utc(), now_utc()), 
                 """,
                 (state, document_type.value, now_utc(), now_utc()),
             )
 
-            conn.execute(
-                """
-                INSERT INTO outreach
-                    (place_id, company_name, status, created_at, updated_at)
-                VALUES (?, ?, 'video_needed', ?, ?)
-                ON CONFLICT(place_id) DO UPDATE SET
-                    status = 'video_needed',
-                    updated_at = excluded.updated_at
-                """,
-                (place_id, "", now_utc(), now_utc()),
-            )
+            # insert outreach record if not exists for this place_id
+            existing = conn.execute(
+                "SELECT id FROM outreach WHERE place_id = ?",
+                (place_id,),
+            ).fetchone()
+
+            if not existing:
+                conn.execute(
+                    """
+                    INSERT INTO outreach
+                        (place_id, company_name, status, created_at, updated_at)
+                    VALUES (?, ?, 'video_needed', ?, ?)
+                    """,
+                    (place_id, "", now_utc(), now_utc()),
+                )
+            else:
+                conn.execute(
+                    """
+                    UPDATE outreach SET status = 'video_needed', updated_at = ?
+                    WHERE place_id = ?
+                    """,
+                    (now_utc(), place_id),
+                )
 
     def _build_prompt(
         self,
