@@ -77,7 +77,7 @@ async def stats():
         ).fetchone()[0]
 
         total_sent = conn.execute(
-            "SELECT COUNT(*) FROM outreach WHERE status != 'pending'"
+            "SELECT COUNT(*) FROM outreach WHERE status IN ('sent', 'follow_up_1', 'follow_up_2', 'follow_up_3', 'replied', 'interested', 'booked', 'cold')"
         ).fetchone()[0]
 
         total_replied = conn.execute(
