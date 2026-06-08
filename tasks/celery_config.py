@@ -42,6 +42,11 @@ celery_app.conf.update(
             "task": "tasks.agent_tasks.run_research_pipeline",
             "schedule": 7200,
         },
+        # personalise researched leads — every 2 hours
+        "personalise-leads": {
+            "task": "tasks.agent_tasks.run_personalisation_pipeline",
+            "schedule": 7200,
+        },
         # send queued outreach emails — every hour
         "send-queued-emails": {
             "task": "tasks.agent_tasks.run_outreach_pipeline",

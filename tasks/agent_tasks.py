@@ -167,6 +167,38 @@ def run_research_pipeline() -> dict:
         return {"error": str(e)}
 
 
+@celery_app.task(name="tasks.agent_tasks.run_personalisation_pipeline")
+def run_personalisation_pipeline() -> dict:
+    """
+    find all researched companies not yet personalised
+    disatches personalise_and_queue tasks for each
+    """
+    try:
+        with get_connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT cr.place_id
+                FROM company_research cr
+                LEFT JOIN outreach o ON cr.place_id = o.place_id
+                WHERE o.place_id IS NULL
+                LIMIT 100
+                """,
+            ).fetchall()
+
+        leads = [row[0] for row in rows]
+        logger.info(f"Personalisation pipeline — {len(leads)} leads to personalise")
+
+        for place_id in leads:
+            personalise_and_queue.delay(place_id)
+
+        return {"dispactched": len(leads)}
+
+    except Exception as e:
+        logger.error(f"personalisation pipeline failed: {e}")
+
+        return {"error": str(e)}
+
+
 @celery_app.task(name="tasks.agent_tasks.run_outreach_pipeline")
 def run_outreach_pipeline() -> dict:
     """
@@ -211,7 +243,7 @@ def run_outreach_pipeline() -> dict:
             if success:
                 sent += 1
             else:
-                errors + 1
+                errors += 1
         logger.info(f"Outreach pipeline — sent={sent} errors={errors}")
         return {"sent": sent, "errors": errors}
 
