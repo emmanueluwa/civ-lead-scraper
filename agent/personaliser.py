@@ -41,6 +41,10 @@ class PersonalisationAgent:
         if not self.api_key:
             raise ValueError("GROK_API_KEY not set in environment")
 
+        self.calendly_link = os.environ.get("CALENDLY_LINK")
+        if not self.calendly_link:
+            raise ValueError("CALENDLY_LINK not set in environment")
+
         self.session = requests.Session()
         self.session.headers.update(
             {
@@ -157,7 +161,8 @@ class PersonalisationAgent:
         decision_maker_title: Optional[str],
         youtube_url: str,
     ) -> str:
-        recipient = decision_maker_name or "the team"
+        recipient = decision_maker_name or "there"
+        first_name = recipient.split()[0] if decision_maker_name else "there"
         title_context = f" ({decision_maker_title})" if decision_maker_title else ""
 
         document_type_descriptions = {
@@ -175,34 +180,43 @@ class PersonalisationAgent:
         )
 
         return f"""
-You are writing a cold email on behalf of Emmanuel, a civil engineering graduate turned AI engineer based in London.
+    You are writing a cold email on behalf of Emmanuel Uwadiae, who studied BEng Civil and Structural Engineering at the University of Leeds before transitioning into AI engineering. He built SwiftCiv after watching engineers spend hours hunting through regulatory PDFs for a single quote.
 
-Emmanuel built SwiftCiv — a tool that lets civil engineers upload regulatory PDFs and get verbatim quotes with exact page and section citations instantly. No paraphrasing, no hallucinations. Just the exact text from the document with the page number.
+    SwiftCiv lets civil engineers upload regulatory PDFs and get verbatim quotes with exact page and section citations instantly. No paraphrasing, no hallucinations. Just the exact text from the document with the page number.
 
-Write a cold email to {recipient}{title_context} at {company_name} in {city}, {state}.
+    Write a cold email to {first_name}{title_context} at {company_name} in {city}, {state}.
 
-Company context: {company_summary}
+    Company context: {company_summary}
 
-This company primarily works with {doc_description}.
+    This company primarily works with {doc_description}.
 
-The email must:
-- Open with a specific reference to what {company_name} does — show you know their work
-- Briefly explain what SwiftCiv does in one sentence
-- Reference that you have recorded a short demo specifically showing SwiftCiv answering questions about {document_type.value} documents relevant to {state}
-- Include this YouTube link naturally in the email: {youtube_url}
-- End with a soft call to action — offer a free 10 minute demo call, no pressure
-- Be under 150 words total
-- Sound like a human wrote it — no corporate language, no buzzwords
-- Be written in first person as Emmanuel
+    The email must follow this exact structure:
+    1. Open with a specific reference to what {company_name} does — show you know their work. One sentence.
+    2. One sentence introducing Emmanuel — he studied BEng Civil and Structural Engineering at the University of Leeds before moving into AI engineering, and built SwiftCiv after watching engineers spend hours hunting through regulatory PDFs for a single quote.
+    3. One sentence explaining what SwiftCiv does — verbatim quotes with exact page and section citations from uploaded PDFs, nothing paraphrased.
+    4. Reference the short demo recorded specifically for {document_type.value} documents relevant to {state} and include this YouTube link naturally: {youtube_url}
+    5. End with this exact call to action: "Would a quick 10-minute call be worth your time? Book here: {self.calendly_link}"
+    6. Close with this exact signature:
 
-Also write a subject line that is specific to {company_name} and their work. Not generic. Not salesy.
+    Emmanuel Uwadiae
+    BEng Civil & Structural Engineering
+    fulodev.com
 
-Return ONLY a valid JSON object with two fields: "subject" and "body".
-No preamble, no explanation, no markdown code fences.
+    Rules:
+    - The YouTube link and the Calendly link must be two completely different URLs — never use the same URL twice
+    - Be under 180 words total excluding the signature
+    - Sound like a human wrote it — no corporate language, no buzzwords
+    - First person as Emmanuel
+    - Do not use the word "verbatim" in the email body — find a natural way to express it
 
-Example format:
-{{"subject": "Quick question about stormwater lookups at Davidson Engineering", "body": "Hi John,\\n\\nI came across Davidson Engineering..."}}
-"""
+    Also write a subject line specific to {company_name} and their work. Not generic. Not salesy.
+
+    Return ONLY a valid JSON object with two fields: "subject" and "body".
+    No preamble, no explanation, no markdown code fences.
+
+    Example format:
+    {{"subject": "Quick question about land dev lookups at {company_name}", "body": "Hi {first_name},\\n\\n..."}}
+    """
 
     @retry(
         retry=retry_if_exception_type(requests.exceptions.RequestException),
