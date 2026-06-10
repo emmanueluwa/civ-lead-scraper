@@ -28,16 +28,16 @@ function sleep(minMs, maxMs) {
 
 // get no_email leads from SQLite via Python
 function getLeads() {
+  const dbPath = path.join(__dirname, "..", "data", "sales_agent.db");
   const result = execSync(
-    'python3 -c "' +
-      "import sqlite3, json, os;" +
-      "db = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'sales_agent.db');" +
-      "conn = sqlite3.connect(db);" +
-      "conn.row_factory = sqlite3.Row;" +
-      "rows = conn.execute('''SELECT o.id, o.place_id, cr.company_name, cr.city, cr.state, cr.decision_maker_name, cr.decision_maker_title FROM outreach o JOIN company_research cr ON o.place_id = cr.place_id WHERE o.status = \\'no_email\\' LIMIT 50''').fetchall();" +
-      "print(json.dumps([dict(r) for r in rows]));" +
-      "conn.close()" +
-      '"',
+    `python3 -c "
+import sqlite3, json
+conn = sqlite3.connect('${dbPath}')
+conn.row_factory = sqlite3.Row
+rows = conn.execute('''SELECT o.id, o.place_id, cr.company_name, cr.city, cr.state, cr.decision_maker_name, cr.decision_maker_title FROM outreach o JOIN company_research cr ON o.place_id = cr.place_id WHERE o.status = 'no_email' LIMIT 50''').fetchall()
+print(json.dumps([dict(r) for r in rows]))
+conn.close()
+"`,
     { cwd: path.join(__dirname, "..") },
   )
     .toString()
