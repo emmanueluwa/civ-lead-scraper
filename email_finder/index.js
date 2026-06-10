@@ -173,13 +173,13 @@ async function main() {
 
   const browser = await puppeteer.launch({
     headless: true,
+    executablePath: process.env.CHROMIUM_PATH,
     args: [
       "--no-sandbox",
       "--disable-dev-shm-usage",
       "--disable-blink-features=AutomationControlled",
     ],
   });
-
   try {
     const page = await browser.newPage();
 
