@@ -19,6 +19,7 @@ const path = require("path");
 
 puppeteer.use(StealthPlugin());
 puppeteer.use(AnonymizeUAPlugin());
+require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 
 // random sleep between min and max milliseconds
 function sleep(minMs, maxMs) {
@@ -28,8 +29,7 @@ function sleep(minMs, maxMs) {
 
 // get no_email leads from SQLite via Python
 function getLeads() {
-  const dbPath =
-    "/var/lib/docker/volumes/civ-lead-scraper_sqlite_data/_data/sales_agent.db";
+  const dbPath = process.env.SALES_AGENT_DB_PATH;
   const result = execSync(
     `python3 -c "
 import sqlite3, json
