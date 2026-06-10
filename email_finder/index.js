@@ -28,7 +28,8 @@ function sleep(minMs, maxMs) {
 
 // get no_email leads from SQLite via Python
 function getLeads() {
-  const dbPath = path.join(__dirname, "..", "data", "sales_agent.db");
+  const dbPath =
+    "/var/lib/docker/volumes/civ-lead-scraper_sqlite_data/_data/sales_agent.db";
   const result = execSync(
     `python3 -c "
 import sqlite3, json
