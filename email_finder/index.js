@@ -48,11 +48,75 @@ conn.close()
 }
 
 // extract LinkedIn URL from Google redirect URL
-function extractLinkedInUrl(googleUrl) {
-  const match = googleUrl.split("&url=")[1];
-  if (match) {
-    return decodeURIComponent(match.split("&")[0]);
+async function findLinkedInUrl(
+  page,
+  companyName,
+  city,
+  state,
+  decisionMakerName,
+) {
+  const query = decisionMakerName
+    ? `"${companyName}" "${city}" "${state}" "${decisionMakerName}" site:linkedin.com`
+    : `"${companyName}" "${city}" "${state}" CEO OR President OR Principal site:linkedin.com`;
+
+  const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+
+  console.log(`Searching Google: ${query}`);
+
+  await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+  await sleep(2000, 3000);
+
+  // handle Google cookie consent banner
+  try {
+    const acceptButton =
+      (await page.$('button[id="L2AGLb"]')) ||
+      (await page.$('button[aria-label="Accept all"]')) ||
+      (await page.$("#acceptAll"));
+    if (acceptButton) {
+      await acceptButton.click();
+      console.log("Accepted Google cookies");
+      await sleep(1000, 2000);
+    }
+  } catch (e) {
+    // no cookie banner present
   }
+
+  // debug — log what Google returned
+  const title = await page.title();
+  console.log(`Page title: ${title}`);
+
+  // extract all hrefs from search results
+  const hrefs = await page.evaluate(() => {
+    const links = Array.from(document.querySelectorAll("a[href]"));
+    return links
+      .map((a) => a.href)
+      .filter(
+        (href) =>
+          href.includes("linkedin.com/in/") ||
+          (href.includes("google.com/url") &&
+            href.includes("linkedin.com/in/")),
+      );
+  });
+
+  console.log(`Found ${hrefs.length} LinkedIn hrefs`);
+
+  for (const href of hrefs) {
+    let linkedinUrl = null;
+
+    if (href.includes("google.com/url")) {
+      linkedinUrl = extractLinkedInUrl(href);
+    } else if (href.includes("linkedin.com/in/")) {
+      linkedinUrl = href;
+    }
+
+    if (linkedinUrl && linkedinUrl.includes("linkedin.com/in/")) {
+      linkedinUrl = linkedinUrl.replace("uk.linkedin.com", "www.linkedin.com");
+      console.log(`Found LinkedIn URL: ${linkedinUrl}`);
+      return linkedinUrl;
+    }
+  }
+
+  console.log(`No LinkedIn URL found for ${companyName}`);
   return null;
 }
 
