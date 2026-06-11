@@ -6,7 +6,8 @@
     "city": "Corpus Christi",
     "state": "TX",
     "decision_maker_name": null,
-    "decision_maker_title": null
+    "decision_maker_title": null,
+    "linkedin_url": null
   },
   {
     "id": 225,
@@ -15,7 +16,8 @@
     "city": "Corpus Christi",
     "state": "TX",
     "decision_maker_name": null,
-    "decision_maker_title": null
+    "decision_maker_title": null,
+    "linkedin_url": "https://www.linkedin.com/in/michaelecolwell"
   },
   {
     "id": 228,
@@ -24,7 +26,8 @@
     "city": "Lubbock",
     "state": "TX",
     "decision_maker_name": null,
-    "decision_maker_title": null
+    "decision_maker_title": null,
+    "linkedin_url": null
   },
   {
     "id": 230,
@@ -33,6 +36,7 @@
     "city": "Plano",
     "state": "TX",
     "decision_maker_name": null,
-    "decision_maker_title": null
+    "decision_maker_title": null,
+    "linkedin_url": null
   }
 ]

@@ -54,79 +54,6 @@ conn.close()
   return JSON.parse(result);
 }
 
-// extract LinkedIn URL from Google redirect URL
-async function findLinkedInUrl(
-  page,
-  companyName,
-  city,
-  state,
-  decisionMakerName,
-) {
-  const query = decisionMakerName
-    ? `"${companyName}" "${city}" "${state}" "${decisionMakerName}" linkedin`
-    : `"${companyName}" "${city}" "${state}" CEO linkedin`;
-
-  const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-
-  console.log(`Searching Google: ${query}`);
-
-  await page.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
-  await sleep(2000, 3000);
-
-  // handle Google cookie consent banner
-  try {
-    const acceptButton =
-      (await page.$('button[id="L2AGLb"]')) ||
-      (await page.$('button[aria-label="Accept all"]')) ||
-      (await page.$("#acceptAll"));
-    if (acceptButton) {
-      await acceptButton.click();
-      console.log("Accepted Google cookies");
-      await sleep(1000, 2000);
-    }
-  } catch (e) {
-    // no cookie banner present
-  }
-
-  // debug — log what Google returned
-  const title = await page.title();
-  console.log(`Page title: ${title}`);
-
-  // extract all hrefs from search results
-  const hrefs = await page.evaluate(() => {
-    const links = Array.from(document.querySelectorAll("a[href]"));
-    return links
-      .map((a) => a.href)
-      .filter(
-        (href) =>
-          href.includes("linkedin.com/in/") ||
-          (href.includes("google.com/url") &&
-            href.includes("linkedin.com/in/")),
-      );
-  });
-
-  console.log(`Found ${hrefs.length} LinkedIn hrefs`);
-
-  for (const href of hrefs) {
-    let linkedinUrl = null;
-
-    if (href.includes("google.com/url")) {
-      linkedinUrl = extractLinkedInUrl(href);
-    } else if (href.includes("linkedin.com/in/")) {
-      linkedinUrl = href;
-    }
-
-    if (linkedinUrl && linkedinUrl.includes("linkedin.com/in/")) {
-      linkedinUrl = linkedinUrl.replace("uk.linkedin.com", "www.linkedin.com");
-      console.log(`Found LinkedIn URL: ${linkedinUrl}`);
-      return linkedinUrl;
-    }
-  }
-
-  console.log(`No LinkedIn URL found for ${companyName}`);
-  return null;
-}
-
 // search Google for LinkedIn profile
 async function findLinkedInUrl(
   page,
@@ -136,8 +63,8 @@ async function findLinkedInUrl(
   decisionMakerName,
 ) {
   const query = decisionMakerName
-    ? `"${companyName}" "${city}" "${state}" "${decisionMakerName}" site:linkedin.com`
-    : `"${companyName}" "${city}" "${state}" CEO OR President OR Principal site:linkedin.com`;
+    ? `${companyName} ${state} ${decisionMakerName} linkedin`
+    : `${companyName} ${state} CEO linkedin`;
 
   const searchUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}&ia=web`;
 
@@ -186,7 +113,6 @@ async function findEmailViaMailmeteor(page, linkedinUrl) {
 
   await sleep(3000, 5000);
 
-  // clear input and type LinkedIn URL
   await page.click("#linkedin-url");
   await page.evaluate(() => {
     document.querySelector("#linkedin-url").value = "";
@@ -195,13 +121,22 @@ async function findEmailViaMailmeteor(page, linkedinUrl) {
 
   await sleep(1000, 2000);
 
-  // click Find Email button
   await page.click('button[aria-label="Find Email"]');
 
   console.log("Waiting for Mailmeteor result...");
-  await sleep(15000, 20000);
 
-  // check for email result
+  // wait for either email result or no results message — up to 25 seconds
+  try {
+    await page.waitForSelector(
+      'span.linkedin-email-finder__text.text-secondary, span:has-text("No results found")',
+      { timeout: 25000 },
+    );
+  } catch (e) {
+    console.log("Timed out waiting for result");
+  }
+
+  await sleep(2000, 3000);
+
   const emailElement = await page.$(
     "span.linkedin-email-finder__text.text-secondary",
   );
@@ -212,15 +147,6 @@ async function findEmailViaMailmeteor(page, linkedinUrl) {
       return email;
     }
   }
-
-  // check for no results
-  const noResult = await page
-    .$eval("span", (els) =>
-      [...document.querySelectorAll("span")].find((el) =>
-        el.textContent.includes("No results found"),
-      ),
-    )
-    .catch(() => null);
 
   console.log("No email found");
   return null;
@@ -235,8 +161,6 @@ async function main() {
     return;
   }
 
-  const results = [];
-
   const browser = await puppeteer.launch({
     headless: false,
     executablePath: process.env.CHROMIUM_PATH,
@@ -246,19 +170,20 @@ async function main() {
       "--disable-blink-features=AutomationControlled",
     ],
   });
+
   try {
     const page = await browser.newPage();
-
-    // set realistic viewport
     await page.setViewport({ width: 1280, height: 800 });
+
+    // ── PASS 1: collect LinkedIn URLs ──────────────────────────────
+    console.log("\n── Pass 1: Finding LinkedIn URLs ──");
+    const linkedinData = [];
 
     for (const lead of leads) {
       console.log(
-        `\nProcessing: ${lead.company_name} (${lead.city}, ${lead.state})`,
+        `\nSearching: ${lead.company_name} (${lead.city}, ${lead.state})`,
       );
-
       try {
-        // step 1 — find LinkedIn URL via Google
         const linkedinUrl = await findLinkedInUrl(
           page,
           lead.company_name,
@@ -267,35 +192,63 @@ async function main() {
           lead.decision_maker_name,
         );
 
-        if (!linkedinUrl) {
-          results.push({
-            outreach_id: lead.id,
-            place_id: lead.place_id,
-            company_name: lead.company_name,
-            email: null,
-            status: "no_linkedin",
-          });
-          await sleep(10000, 15000);
-          continue;
-        }
+        linkedinData.push({
+          ...lead,
+          linkedin_url: linkedinUrl,
+        });
 
         await sleep(10000, 15000);
+      } catch (e) {
+        console.error(
+          `Error finding LinkedIn for ${lead.company_name}: ${e.message}`,
+        );
+        linkedinData.push({ ...lead, linkedin_url: null });
+        await sleep(10000, 15000);
+      }
+    }
 
-        // step 2 — find email via Mailmeteor
-        const email = await findEmailViaMailmeteor(page, linkedinUrl);
+    // save LinkedIn URLs
+    const linkedinPath = path.join(__dirname, "linkedin_urls.json");
+    fs.writeFileSync(linkedinPath, JSON.stringify(linkedinData, null, 2));
+    console.log(`\nPass 1 complete — saved to linkedin_urls.json`);
+
+    const withLinkedin = linkedinData.filter((l) => l.linkedin_url);
+    console.log(`Found LinkedIn URLs: ${withLinkedin.length}/${leads.length}`);
+
+    // ── PASS 2: find emails via Mailmeteor ─────────────────────────
+    console.log("\n── Pass 2: Finding Emails via Mailmeteor ──");
+    const results = [];
+
+    for (const lead of linkedinData) {
+      if (!lead.linkedin_url) {
+        results.push({
+          outreach_id: lead.id,
+          place_id: lead.place_id,
+          company_name: lead.company_name,
+          email: null,
+          status: "no_linkedin",
+        });
+        continue;
+      }
+
+      console.log(`\nMailmeteor: ${lead.company_name}`);
+      try {
+        const email = await findEmailViaMailmeteor(page, lead.linkedin_url);
 
         results.push({
           outreach_id: lead.id,
           place_id: lead.place_id,
           company_name: lead.company_name,
           email: email,
-          linkedin_url: linkedinUrl,
+          linkedin_url: lead.linkedin_url,
           status: email ? "found" : "not_found",
         });
 
         await sleep(10000, 15000);
       } catch (e) {
-        console.error(`Error processing ${lead.company_name}: ${e.message}`);
+        console.error(
+          `Error finding email for ${lead.company_name}: ${e.message}`,
+        );
         results.push({
           outreach_id: lead.id,
           place_id: lead.place_id,
@@ -307,20 +260,19 @@ async function main() {
         await sleep(10000, 15000);
       }
     }
+
+    // write results
+    const outputPath = path.join(__dirname, "results.json");
+    fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
+
+    const found = results.filter((r) => r.email).length;
+    const notFound = results.filter((r) => !r.email).length;
+
+    console.log(`\nDone — found=${found} not_found=${notFound}`);
+    console.log(`Results written to results.json`);
+    console.log("Now run: python3 email_finder/update_db.py");
   } finally {
     await browser.close();
   }
-
-  // write results to JSON
-  const outputPath = path.join(__dirname, "results.json");
-  fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
-
-  const found = results.filter((r) => r.email).length;
-  const notFound = results.filter((r) => !r.email).length;
-
-  console.log(`\nDone — found=${found} not_found=${notFound}`);
-  console.log(`Results written to ${outputPath}`);
-  console.log("Now run: python3 email_finder/update_db.py");
 }
-
 main().catch(console.error);

@@ -1,0 +1,32 @@
+[
+  {
+    "outreach_id": 211,
+    "place_id": "ChIJ-WP5bkBfaIYRKNYulu5R2gU",
+    "company_name": "Colliers Engineering & Design",
+    "email": null,
+    "linkedin_url": "https://www.linkedin.com/in/kevin-l-haney-p-e-085b3643",
+    "status": "not_found"
+  },
+  {
+    "outreach_id": 225,
+    "place_id": "ChIJ09EM4Jz1aIYRHYEksq8iGDg",
+    "company_name": "Colwell & Associates Inc",
+    "email": null,
+    "status": "no_linkedin"
+  },
+  {
+    "outreach_id": 228,
+    "place_id": "ChIJ1awkcRNz_oYRveJPpFESjpU",
+    "company_name": "Halff",
+    "email": null,
+    "linkedin_url": "https://www.linkedin.com/in/audreyhenvey",
+    "status": "not_found"
+  },
+  {
+    "outreach_id": 230,
+    "place_id": "ChIJ24_P7yQZTIYRvTcRCTFqqaM",
+    "company_name": "Roome Land Surveying",
+    "email": null,
+    "status": "no_linkedin"
+  }
+]
