@@ -154,7 +154,7 @@ async function findEmailViaMailmeteor(page, linkedinUrl) {
 
 async function main() {
   const leads = getLeads();
-  console.log(`Processing ${leads.length} leads with no email`);
+  console.log(`Processing ${leads.length} leads`);
 
   if (leads.length === 0) {
     console.log("No leads to process");
@@ -162,7 +162,7 @@ async function main() {
   }
 
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: true,
     executablePath: process.env.CHROMIUM_PATH,
     args: [
       "--no-sandbox",
@@ -175,9 +175,7 @@ async function main() {
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 800 });
 
-    // ── PASS 1: collect LinkedIn URLs ──────────────────────────────
-    console.log("\n── Pass 1: Finding LinkedIn URLs ──");
-    const linkedinData = [];
+    const results = [];
 
     for (const lead of leads) {
       console.log(
@@ -192,87 +190,42 @@ async function main() {
           lead.decision_maker_name,
         );
 
-        linkedinData.push({
-          ...lead,
+        results.push({
+          outreach_id: lead.id,
+          place_id: lead.place_id,
+          company_name: lead.company_name,
+          city: lead.city,
+          state: lead.state,
           linkedin_url: linkedinUrl,
         });
 
-        await sleep(10000, 15000);
-      } catch (e) {
-        console.error(
-          `Error finding LinkedIn for ${lead.company_name}: ${e.message}`,
-        );
-        linkedinData.push({ ...lead, linkedin_url: null });
-        await sleep(10000, 15000);
-      }
-    }
-
-    // save LinkedIn URLs
-    const linkedinPath = path.join(__dirname, "linkedin_urls.json");
-    fs.writeFileSync(linkedinPath, JSON.stringify(linkedinData, null, 2));
-    console.log(`\nPass 1 complete — saved to linkedin_urls.json`);
-
-    const withLinkedin = linkedinData.filter((l) => l.linkedin_url);
-    console.log(`Found LinkedIn URLs: ${withLinkedin.length}/${leads.length}`);
-
-    // ── PASS 2: find emails via Mailmeteor ─────────────────────────
-    console.log("\n── Pass 2: Finding Emails via Mailmeteor ──");
-    const results = [];
-
-    for (const lead of linkedinData) {
-      if (!lead.linkedin_url) {
-        results.push({
-          outreach_id: lead.id,
-          place_id: lead.place_id,
-          company_name: lead.company_name,
-          email: null,
-          status: "no_linkedin",
-        });
-        continue;
-      }
-
-      console.log(`\nMailmeteor: ${lead.company_name}`);
-      try {
-        const email = await findEmailViaMailmeteor(page, lead.linkedin_url);
-
-        results.push({
-          outreach_id: lead.id,
-          place_id: lead.place_id,
-          company_name: lead.company_name,
-          email: email,
-          linkedin_url: lead.linkedin_url,
-          status: email ? "found" : "not_found",
-        });
+        console.log(linkedinUrl ? `✓ ${linkedinUrl}` : `✗ No LinkedIn found`);
 
         await sleep(10000, 15000);
       } catch (e) {
-        console.error(
-          `Error finding email for ${lead.company_name}: ${e.message}`,
-        );
+        console.error(`Error: ${e.message}`);
         results.push({
           outreach_id: lead.id,
           place_id: lead.place_id,
           company_name: lead.company_name,
-          email: null,
-          status: "error",
-          error: e.message,
+          city: lead.city,
+          state: lead.state,
+          linkedin_url: null,
         });
         await sleep(10000, 15000);
       }
     }
-
-    // write results
-    const outputPath = path.join(__dirname, "results.json");
-    fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
-
-    const found = results.filter((r) => r.email).length;
-    const notFound = results.filter((r) => !r.email).length;
-
-    console.log(`\nDone — found=${found} not_found=${notFound}`);
-    console.log(`Results written to results.json`);
-    console.log("Now run: python3 email_finder/update_db.py");
   } finally {
     await browser.close();
   }
+
+  const outputPath = path.join(__dirname, "linkedin_urls.json");
+  fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
+
+  const found = results.filter((r) => r.linkedin_url).length;
+  console.log(`\nDone — found=${found}/${results.length} LinkedIn URLs`);
+  console.log(`Saved to linkedin_urls.json`);
+  console.log("Open each URL in Mailmeteor to find emails manually");
 }
+
 main().catch(console.error);
