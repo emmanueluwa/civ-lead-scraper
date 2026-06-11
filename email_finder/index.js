@@ -63,8 +63,8 @@ async function findLinkedInUrl(
   decisionMakerName,
 ) {
   const query = decisionMakerName
-    ? `"${companyName}" "${city}" "${state}" "${decisionMakerName}" site:linkedin.com`
-    : `"${companyName}" "${city}" "${state}" CEO OR President OR Principal site:linkedin.com`;
+    ? `"${companyName}" "${city}" "${state}" "${decisionMakerName}" linkedin`
+    : `"${companyName}" "${city}" "${state}" CEO linkedin`;
 
   const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
 
