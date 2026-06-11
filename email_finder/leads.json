@@ -1,0 +1,47 @@
+[
+  {
+    "id": 210,
+    "place_id": "ChIJ04nTjGBeaIYR8ii0zNvGmiE",
+    "company_name": "Frontier Surveying Co.",
+    "city": "Corpus Christi",
+    "state": "TX",
+    "decision_maker_name": null,
+    "decision_maker_title": null
+  },
+  {
+    "id": 211,
+    "place_id": "ChIJ-WP5bkBfaIYRKNYulu5R2gU",
+    "company_name": "Colliers Engineering & Design",
+    "city": "Corpus Christi",
+    "state": "TX",
+    "decision_maker_name": null,
+    "decision_maker_title": null
+  },
+  {
+    "id": 225,
+    "place_id": "ChIJ09EM4Jz1aIYRHYEksq8iGDg",
+    "company_name": "Colwell & Associates Inc",
+    "city": "Corpus Christi",
+    "state": "TX",
+    "decision_maker_name": null,
+    "decision_maker_title": null
+  },
+  {
+    "id": 228,
+    "place_id": "ChIJ1awkcRNz_oYRveJPpFESjpU",
+    "company_name": "Halff",
+    "city": "Lubbock",
+    "state": "TX",
+    "decision_maker_name": null,
+    "decision_maker_title": null
+  },
+  {
+    "id": 230,
+    "place_id": "ChIJ24_P7yQZTIYRvTcRCTFqqaM",
+    "company_name": "Roome Land Surveying",
+    "city": "Plano",
+    "state": "TX",
+    "decision_maker_name": null,
+    "decision_maker_title": null
+  }
+]

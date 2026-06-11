@@ -29,6 +29,13 @@ function sleep(minMs, maxMs) {
 
 // get no_email leads from SQLite via Python
 function getLeads() {
+  //test mode
+  const localLeadsPath = path.join(__dirname, "leads.json");
+  if (fs.existsSync(localLeadsPath)) {
+    console.log("Test mode — reading from leads.json");
+    return JSON.parse(fs.readFileSync(localLeadsPath, "utf8"));
+  }
+
   const dbPath = process.env.SALES_AGENT_DB_PATH;
   const result = execSync(
     `python3 -c "
@@ -132,7 +139,7 @@ async function findLinkedInUrl(
     ? `"${companyName}" "${city}" "${state}" "${decisionMakerName}" site:linkedin.com`
     : `"${companyName}" "${city}" "${state}" CEO OR President OR Principal site:linkedin.com`;
 
-  const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+  const searchUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}&ia=web`;
 
   console.log(`Searching Google: ${query}`);
 
@@ -144,12 +151,7 @@ async function findLinkedInUrl(
     const links = Array.from(document.querySelectorAll("a[href]"));
     return links
       .map((a) => a.href)
-      .filter(
-        (href) =>
-          href.includes("linkedin.com/in/") ||
-          (href.includes("google.com/url") &&
-            href.includes("linkedin.com/in/")),
-      );
+      .filter((href) => href.includes("linkedin.com/in/"));
   });
 
   for (const href of hrefs) {
@@ -236,7 +238,7 @@ async function main() {
   const results = [];
 
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: false,
     executablePath: process.env.CHROMIUM_PATH,
     args: [
       "--no-sandbox",
