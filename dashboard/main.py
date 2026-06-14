@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from models import init_db
-from dashboard.routes import leads, videos, outreach, calls
+from dashboard.routes import leads, videos, outreach, calls, no_email
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +52,7 @@ app.include_router(leads.router, prefix="/api/leads", tags=["leads"])
 app.include_router(videos.router, prefix="/api/videos", tags=["videos"])
 app.include_router(outreach.router, prefix="/api/outreach", tags=["outreach"])
 app.include_router(calls.router, prefix="/api/calls", tags=["calls"])
+app.include_router(no_email.router, prefix="/api/no-email", tags=["no-email"])
 
 
 @app.get("/api/health")
