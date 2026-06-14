@@ -100,6 +100,7 @@ def init_db():
                 email_subject TEXT,
                 email_body TEXT,
                 youtube_url TEXT,
+                linkedin_url TEXT,
                 sent_at TEXT,
                 follow_up_1_at TEXT,
                 follow_up_2_at TEXT,
