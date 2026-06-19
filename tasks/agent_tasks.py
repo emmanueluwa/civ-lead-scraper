@@ -180,7 +180,7 @@ def run_personalisation_pipeline() -> dict:
                 SELECT cr.place_id
                 FROM company_research cr
                 LEFT JOIN outreach o ON cr.place_id = o.place_id
-                WHERE o.place_id IS NULL
+                WHERE o.place_id IS NULL OR o.status = 'pending'
                 LIMIT 100
                 """,
             ).fetchall()
