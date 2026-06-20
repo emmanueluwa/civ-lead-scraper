@@ -300,8 +300,8 @@ class PersonalisationAgent:
                 )
                 VALUES (?, ?, ?, ?, 'queued', ?, ?, ?, ?, ?)
                 ON CONFLICT(place_id) DO UPDATE SET
-                    recipient_email = excluded.recipient_email,
-                    recipient_name = excluded.recipient_name,
+                    recipient_email = COALESCE(excluded.recipient_email, outreach.recipient_email),
+                    recipient_name = COALESCE(excluded.recipient_name, outreach.recipient_name),
                     email_subject = excluded.email_subject,
                     email_body = excluded.email_body,
                     youtube_url = excluded.youtube_url,
