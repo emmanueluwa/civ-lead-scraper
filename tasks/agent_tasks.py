@@ -89,6 +89,22 @@ def personalise_and_queue(self, place_id: str) -> dict:
                 logger.warning(f"No research found for place_id {place_id}")
                 return {"status": "not_found", "place_id": place_id}
 
+            # check if email and name added manually in no_email page
+            existing = conn.execute(
+                """
+                SELECT recipient_email, recipient_name
+                FROM outreach
+                WHERE place_id = ?
+                """,
+                (place_id,),
+            ).fetchone()
+
+            existing_email = existing["recipient_email"] if existing else None
+            existing_name = existing["recipient_name"] if existing else None
+
+            decision_maker_email = existing_email or row["decision_maker_email"]
+            decision_maker_name = existing_name or row["decision_maker_name"]
+
             agent = PersonalisationAgent()
 
             draft = agent.personalise(
@@ -98,9 +114,9 @@ def personalise_and_queue(self, place_id: str) -> dict:
                 document_type=DocumentType(row["document_type"]),
                 state=row["state"],
                 city=row["city"],
-                decision_maker_name=row["decision_maker_name"],
+                decision_maker_name=decision_maker_name,
                 decision_maker_title=row["decision_maker_title"],
-                decision_maker_email=row["decision_maker_email"],
+                decision_maker_email=decision_maker_email,
             )
             if not draft:
                 return {"status": "video_needed", "place_id": place_id}
