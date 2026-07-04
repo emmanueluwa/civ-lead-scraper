@@ -199,8 +199,7 @@ class FollowUpAgent:
                 f"through regulatory documents — it gives verbatim quotes with "
                 f"exact page citations instantly, so you're never re-reading a "
                 f"50-page PDF for one clause.\n\n"
-                f"Worth a quick 10-minute look? Book here: "
-                f"{self.calendly_link}\n\n"
+                f"Worth a quick chat? Just reply to this email.\n\n"
                 f"Emmanuel\n"
                 f"swiftciv.com"
             )
@@ -221,8 +220,7 @@ class FollowUpAgent:
                 f"that? I work with civil engineering firms as an embedded "
                 f"engineering resource, building and maintaining the tools a "
                 f"team needs without having to hire a full department for it.\n\n"
-                f"Happy to talk about either one — book a time here: "
-                f"{self.calendly_link}\n\n"
+                f"Happy to talk about either — just reply to this email.\n\n"
                 f"Emmanuel\n"
                 f"swiftciv.com"
             )
