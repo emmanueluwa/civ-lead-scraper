@@ -7,7 +7,7 @@ each task is independent and will retry if failed.
 import logging
 
 from tasks.celery_config import celery_app
-from models import get_connection, DocumentType, init_db
+from models import get_connection, DocumentType, init_db, now_utc
 from agent.researcher import ResearchAgent
 from agent.personaliser import PersonalisationAgent
 from agent.executor import EmailExecutor
@@ -260,6 +260,22 @@ def run_outreach_pipeline() -> dict:
                 sent += 1
             else:
                 errors += 1
+                with get_connection() as conn:
+                    conn.execute(
+                        """
+                        UPDATE outreach
+                        SET status = 'failed',
+                            updated_at = ?
+                        WHERE id = ?
+                        """,
+                        (now_utc(), lead["id"]),
+                    )
+                logger.warning(
+                    f"Send failed for {lead['company_name']} "
+                    f"({lead['recipient_email']}) — marked failed, "
+                    f"will not retry automatically"
+                )
+
         logger.info(f"Outreach pipeline — sent={sent} errors={errors}")
         return {"sent": sent, "errors": errors}
 
