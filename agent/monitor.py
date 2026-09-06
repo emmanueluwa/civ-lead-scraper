@@ -61,6 +61,25 @@ UNSUBSCRIBE_SIGNALS = [
     "opt out",
 ]
 
+# keywords that indicate a polite rejection — not a hard unsubscribe
+# but clearly not interested; stop follow ups, do not send booking link
+REJECTION_SIGNALS = [
+    "no thank you",
+    "no thanks",
+    "not for us",
+    "not a good fit",
+    "not the right time",
+    "don't need",
+    "do not need",
+    "if something changes",
+    "if anything changes",
+    "appreciate the introduction",
+    "not looking",
+    "pass on this",
+    "won't be needed",
+    "not something we",
+]
+
 
 class EmailMonitor:
     def __init__(self):
@@ -248,13 +267,19 @@ class EmailMonitor:
 
     def _classify_intent(self, body: str) -> str:
         """
-        classify reply intent as interested, unsubscribe or neutral
+        classify reply intent as interested, unsubscribe, rejected or neutral.
+        order matters: unsubscribe checked first (hard stop), then rejection
+        (soft stop), then interest signals, then neutral fallback.
         """
         body_lower = body.lower()
 
         for signal in UNSUBSCRIBE_SIGNALS:
             if signal in body_lower:
                 return "unsubscribe"
+
+        for signal in REJECTION_SIGNALS:
+            if signal in body_lower:
+                return "rejected"
 
         for signal in INTEREST_SIGNALS:
             if signal in body_lower:
@@ -271,6 +296,8 @@ class EmailMonitor:
         if intent == "interested":
             new_status = OutreachStatus.INTERESTED.value
         elif intent == "unsubscribe":
+            new_status = OutreachStatus.UNSUBSCRIBED.value
+        elif intent == "rejected":
             new_status = OutreachStatus.UNSUBSCRIBED.value
         else:
             new_status = OutreachStatus.REPLIED.value

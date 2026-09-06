@@ -1,6 +1,11 @@
 # Civ Lead Scraper + Sales Agent
 
-Automated lead generation and outreach pipeline for civil engineering firms across the USA. Scrapes 150-300 fresh firms daily, classifies them by document type using Grok(LLM), and runs a fully automated email outreach sequence — research, personalise, send, follow up, book calls.
+Automated lead generation and outreach pipeline for civil engineering firms. Scrapes fresh firms daily, classifies them by document type using Grok(LLM), and runs a fully automated email outreach sequence — research, personalise, send, follow up, book calls.
+
+**Live:** [dashboard.fulodev.com](https://dashboard.fulodev.com/)  
+**Frontend:** [sales-agent-dashboard](https://github.com/emmanueluwa/sales-agent-dashboard/tree/main/app)
+
+![Dashboard](image.png)
 
 ![Dashboard](image.png)
 
@@ -51,6 +56,10 @@ The only manual steps are recording demo videos when the agent asks and showing 
 - Daily — pipeline performance report to Telegram
 
 ## Dashboard
+
+The dashboard UI lives in a separate Next.js app:  
+[github.com/emmanueluwa/sales-agent-dashboard](https://github.com/emmanueluwa/sales-agent-dashboard/tree/main/app)  
+Live: [https://dashboard.fulodev.com](https://dashboard.fulodev.com/)
 
 - Lead groups by state and document type
 - Video library — paste YouTube demo URLs per group
